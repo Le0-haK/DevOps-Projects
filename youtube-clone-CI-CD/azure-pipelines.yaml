@@ -1,0 +1,77 @@
+# Define Pipeline Trigger
+trigger: 
+  - master # Auto Run CI when New commits comes in "main" branch of "Youtube_Clone" project
+
+# CI #
+# Define Stages in Pipeline
+stages:
+  - stage: Build # Name of the Stage
+    # Define Jobs in "Build" Stage
+    jobs:
+      - job: Build_job # Name of the Job
+        # Define the Agent Pool
+        pool: 
+          vmImage: 'ubuntu-latest' # Using Microsoft-Managed Agent (linux)
+        # Define the steps/tasks in "Build-job" Job
+        steps:
+          # Install and publish npm packages, or run an npm command. Supports npmjs.com and authenticated registries like Azure Artifacts.
+          - task: Npm@1 
+            # Input Parameter or argument of this npm task
+            inputs:
+              # command "npm install" installs all dependencies listed in package.json
+              command: 'install' 
+          # Install and publish npm packages, or run an npm command. Supports npmjs.com and authenticated registries like Azure Artifacts.
+          - task: Npm@1
+            inputs:
+              # Running custom command as npm provides following ci, install and build by default
+              command: 'custom'
+              # command "npm run build" creates a build/ folder with production-ready static files
+              customCommand: 'run build' 
+
+          # Publishes build artifacts (files) from your pipeline so they can be used later in the release stage.
+          - task: PublishBuildArtifacts@1
+            inputs:
+              # Specifies which folder to upload (e.g., the build folder after npm run build)
+              PathtoPublish: 'build'
+              # The name of the artifact (used in later pipeline stages)
+              ArtifactName: 'drop'
+              # Stores the artifact in Azure DevOps Artifact
+              publishLocation: 'Container'
+
+# CI #
+
+# CD #
+  - stage: Deploy 
+    jobs:
+      - job: Deploy_job
+        pool: 
+          vmImage: 'ubuntu-latest'
+        steps:
+        # This task downloads build artifacts that were published earlier in the pipeline. 
+          - task: DownloadBuildArtifacts@1
+            inputs:
+              # Download artifacts from the current pipeline run
+              buildType: 'current'
+              #  Download a single artifact
+              downloadType: 'single'
+              # Name of the artifact to download (must match the one published)
+              artifactName: 'drop'
+              # Location to store the downloaded artifact
+              downloadPath: '$(System.ArtifactsDirectory)'
+
+          # This task deploys a webapp to Azure App Service using an artifact we downloaded from a previous pipeline step
+          - task: AzureRmWebAppDeployment@4
+            inputs:
+              # Uses Azure Resource Manager for Authentication and deployment 
+              ConnectionType: "AzureRM"
+              # Which Azure service connection to use (linked to your Subscription where AS is located)
+              azureSubscription: "AzureDevOps"
+              # Deploys to an Azure Linux Web App
+              appType: "webAppLinux"
+              # Name of the target Azure Web App
+              WebAppName: 'app-eu-dev-ytclone-01'
+              # Path to the app package (artifact we downloaded in previous step)
+              packageForLinux: '$(System.ArtifactsDirectory)/drop'
+              # Sets the app’s runtime to Node.js 18 LTS
+              RuntimeStack: 'NODE:18-lts'
+# CD # 
