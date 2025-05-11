@@ -108,6 +108,9 @@ If you encounter issues during the deployment, the script will provide error mes
 ## 📸 Screenshots
 
 Add screenshots of the terminal output, application UI, or directory structure if available.
+![Script Running](./deploy.png)
+![App Deployed](./website.png)
+
 
 ## 🤝 Acknowledgments
 
