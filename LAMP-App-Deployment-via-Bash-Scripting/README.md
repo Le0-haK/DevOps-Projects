@@ -97,8 +97,8 @@ The script includes:
 
 ### Steps to Execute:
    ```bash
-   chmod +x deploy.sh-ecommerce-application.sh
-   sudo ./deploy.sh-ecommerce-application.sh
+   chmod +x deploy-ecommerce-application.sh
+   sudo ./deploy-ecommerce-application.sh
    ```
 
 ## 📝 Troubleshooting
